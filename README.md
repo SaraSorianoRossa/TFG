@@ -1,5 +1,3 @@
-<h1 align="center">TFG</h1>
-
 ## Overview
 
 En este respositorio se encuentran diferentes ejemplos de circuitos como puede ser el caso de Hadamard. En ellos se ve todo el proceso para construir circuitos zk-SNARKs con [arkwork-rs libraries](https://github.com/arkworks-rs) realizando Marlin.
