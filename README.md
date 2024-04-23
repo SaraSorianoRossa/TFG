@@ -2,7 +2,7 @@
 
 En este respositorio se encuentran diferentes ejemplos de circuitos como puede ser el caso de Hadamard. En ellos se ve todo el proceso para construir circuitos zk-SNARKs con [arkwork-rs libraries](https://github.com/arkworks-rs) realizando Marlin.
 
-En concreto, se pueden llamar a 4 versiones de Marlin. La primera de ellas es la versión original que está definida ..., después tenemos una versión más eficiente que es eliminando la parte del inner que se obtiene en .... A continuación, una asociada a la anterior que se obtiene en ... y por último ....
+En concreto, se pueden llamar a 4 versiones de Marlin. La primera de ellas es la [versión original](https://github.com/SaraSorianoRossa/Original-Marlin) con algunas adaptaciones en el código para poder ser utilizado en este trabajo. A continuación, se realizó la [primera modificación](https://github.com/SaraSorianoRossa/Marlin-v2) cuya versión es más eficiente ya que se elimina la parte del inner (proceso que puede relizar cualquier persona). Una vez realizada la anterior modificación se vió que el envío de $t$ no era necesario. Por ello, se realizó una [segunda modificación](https://github.com/SaraSorianoRossa/Marlin-v3). Para acabar con las modificaciones de Marlin, se realizó una [última](https://github.com/SaraSorianoRossa/Marlin-v4). En ella, se elimina el polinomio $s(X)$ provocando que el circuito no tenga conocimiento nulo consiguiendo una eficiencia mayor. El conocimiento nulo se intentará corregir en trabajos futuros, pero conseguirlo no provocará que sea menos eficiente.
 
 ## Build
 
