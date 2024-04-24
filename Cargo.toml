@@ -13,8 +13,9 @@ ark-ff = { version = "^0.3.0", default-features = false }
 ark-relations = { version = "^0.3.0", default-features = false }
 ark-bls12-381 = { version = "^0.3.0", default-features = false, features = [ "curve" ] }
 ark-poly-commit = { version = "^0.3.0", default-features = false }
+#ark-poly-commit = { path = "https://github.com/SaraSorianoRossa/Poly-Commit.git", default-features = false}
 ark-poly = { version = "^0.3.0", default-features = false }
-marlin = { git = "https://github.com/SaraSorianoRossa/Original-Marlin.git", default-features = false }
+marlin-v1 = { git = "https://github.com/SaraSorianoRossa/Original-Marlin.git", default-features = false }
 marlin-v2 = { git = "https://github.com/SaraSorianoRossa/Marlin-v2.git", default-features = false }
 marlin-v3 = { git = "https://github.com/SaraSorianoRossa/Marlin-v3.git", default-features = false }
 marlin-v4 = { git = "https://github.com/SaraSorianoRossa/Marlin-v4.git", default-features = false }
