@@ -9,10 +9,11 @@ use colored::Colorize;
 
 use ark_bls12_381::{Bls12_381, Fr as BlsFr};
 use ark_poly::univariate::DensePolynomial;
-use ark_poly_commit::marlin_pc::MarlinKZG10;
+use ark_poly_commit::marlin_pc::MarlinKZG10 as OriginalMarlinKZG10;
+use ark_poly_commit_new::marlin_pc::MarlinKZG10 as NewMarlinKZG10;
 use blake2::Blake2s;
 
-use marlin::Marlin as OriginalMarlin;
+use marlin_v1::Marlin as OriginalMarlin;
 use marlin_v2::Marlin as MarlinV2;
 use marlin_v3::Marlin as MarlinV3;
 use marlin_v4::Marlin as MarlinV4;
@@ -41,9 +42,9 @@ struct Args {
     groth16: String,
 }
 
-macro_rules! bench {
+macro_rules! bench_1 {
     ($marlin:ident, $version:expr, $circuit:ident, $constraints:expr) =>{
-        type MultiPC = MarlinKZG10<Bls12_381, DensePolynomial<BlsFr>>;
+        type MultiPC = OriginalMarlinKZG10<Bls12_381, DensePolynomial<BlsFr>>;
         type MarlinInst = $marlin::<BlsFr, MultiPC, Blake2s>;
 
         let num_constraints: usize = 1 << 20;
@@ -53,33 +54,37 @@ macro_rules! bench {
 
         let universal_srs = MarlinInst::universal_setup(num_constraints, num_variables, num_variables, rng).unwrap();
 
-        let circuit_r = $circuit::new_random(rng, $constraints, true);
+        for constraint in [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]{
+            let circuit_r = $circuit::new_random(rng, constraint, true);
+            // let circuit_r = $circuit::new_random(rng, $constraints, true);
 
-        let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();   
+            let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();      
 
-        let circuit_instance = $circuit::new_random(rng, $constraints, false);
+            let circuit_instance = $circuit::new_random(rng, constraint, false);
+            // let circuit_instance = $circuit::new_random(rng, $constraints, false);
 
-        let mut total_duration = std::time::Duration::new(0, 0);
+            let mut total_duration = std::time::Duration::new(0, 0);
 
-        for _ in 0..10 {
-            let start_time = Instant::now();
-            
-            let proof = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
+            for _ in 0..10 {
+                let start_time = Instant::now();
+                
+                let proof = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
 
-            assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng).unwrap());
+                assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng).unwrap());
 
-            let end_time = Instant::now();
-            let duration = end_time - start_time;
-            total_duration += duration;
+                let end_time = Instant::now();
+                let duration = end_time - start_time;
+                total_duration += duration;
+            }
+            println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
         }
-        println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
     }
 }
 
-macro_rules! bench_t {
+macro_rules! bench_2 {
     ($marlin:ident, $version:expr, $circuit:ident, $constraints:expr) =>{
         
-        type MultiPC = MarlinKZG10<Bls12_381, DensePolynomial<BlsFr>>;
+        type MultiPC = NewMarlinKZG10<Bls12_381, DensePolynomial<BlsFr>>;
         type MarlinInst = $marlin::<BlsFr, MultiPC, Blake2s>;
 
         let num_constraints: usize = 1 << 20;
@@ -88,26 +93,69 @@ macro_rules! bench_t {
         let rng = &mut ark_std::test_rng();
         let universal_srs = MarlinInst::universal_setup(num_constraints, num_variables, num_variables, rng).unwrap();
 
-        let circuit_r = $circuit::new_random(rng, $constraints, true);
+        for constraint in [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]{
+            let circuit_r = $circuit::new_random(rng, constraint, true);
+            // let circuit_r = $circuit::new_random(rng, $constraints, true);
 
-        let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();
-        
-        let circuit_instance = $circuit::new_random(rng, $constraints, false);
-
-        let mut total_duration = std::time::Duration::new(0, 0);
-
-        for _ in 0..10 {
-            let start_time = Instant::now();
+            let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();
             
-            let (proof, t_poly) = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
+            let circuit_instance = $circuit::new_random(rng, constraint, false);
+            // let circuit_instance = $circuit::new_random(rng, $constraints, false);
 
-            assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng, &t_poly).unwrap());
+            let mut total_duration = std::time::Duration::new(0, 0);
 
-            let end_time = Instant::now();
-            let duration = end_time - start_time;
-            total_duration += duration;
+            for _ in 0..10 {
+                let start_time = Instant::now();
+                
+                let proof = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
+
+                assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng).unwrap());
+
+                let end_time = Instant::now();
+                let duration = end_time - start_time;
+                total_duration += duration;
+            }
+            println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
         }
-        println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
+    }
+}
+
+macro_rules! bench_3_4 {
+    ($marlin:ident, $version:expr, $circuit:ident, $constraints:expr) =>{
+        
+        type MultiPC = NewMarlinKZG10<Bls12_381, DensePolynomial<BlsFr>>;
+        type MarlinInst = $marlin::<BlsFr, MultiPC, Blake2s>;
+
+        let num_constraints: usize = 1 << 20;
+        let num_variables: usize = 1 << 20;
+    
+        let rng = &mut ark_std::test_rng();
+        let universal_srs = MarlinInst::universal_setup(num_constraints, num_variables, num_variables, rng).unwrap();
+
+        for constraint in [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]{
+            let circuit_r = $circuit::new_random(rng, constraint, true);
+            // let circuit_r = $circuit::new_random(rng, $constraints, true);
+
+            let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();
+            
+            let circuit_instance = $circuit::new_random(rng, constraint, false);
+            // let circuit_instance = $circuit::new_random(rng, $constraints, false);
+
+            let mut total_duration = std::time::Duration::new(0, 0);
+
+            for _ in 0..10 {
+                let start_time = Instant::now();
+                
+                let (proof, t_poly) = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
+
+                assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng, &t_poly).unwrap());
+
+                let end_time = Instant::now();
+                let duration = end_time - start_time;
+                total_duration += duration;
+            }
+            println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
+        }
     }
 }
 
@@ -115,26 +163,31 @@ macro_rules! bench_groth {
     ($circuit:ident, $constraints:expr) => {
         let rng = &mut ark_std::test_rng();
         
-        let circuit_r = $circuit::new_random(rng, $constraints, true);
+        for constraint in [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]{
 
-        let (index_pk, index_vk) = Groth16::<Bls12_381>::circuit_specific_setup(circuit_r, rng).unwrap();      
-        
-        let circuit_instance = $circuit::new_random(rng, $constraints, false);
+            let circuit_r = $circuit::new_random(rng, constraint, true);
+            // let circuit_r = $circuit::new_random(rng, $constraints, true);
 
-        let mut total_duration = std::time::Duration::new(0, 0);
+            let (index_pk, index_vk) = Groth16::<Bls12_381>::circuit_specific_setup(circuit_r, rng).unwrap();      
+            
+            let circuit_instance = $circuit::new_random(rng, constraint, false);
+            // let circuit_instance = $circuit::new_random(rng, $constraints, false);
 
-        for _ in 0..10 {
-            let start_time = Instant::now();
+            let mut total_duration = std::time::Duration::new(0, 0);
 
-            let proof = Groth16::<Bls12_381>::prove(&index_pk, circuit_instance, rng).unwrap();
+            for _ in 0..10 {
+                let start_time = Instant::now();
 
-            assert!(Groth16::<Bls12_381>::verify(&index_vk, &[circuit_instance.get_result()], &proof).unwrap());
+                let proof = Groth16::<Bls12_381>::prove(&index_pk, circuit_instance, rng).unwrap();
 
-            let end_time = Instant::now();
-            let duration = end_time - start_time;
-            total_duration += duration;
+                assert!(Groth16::<Bls12_381>::verify(&index_vk, &[circuit_instance.get_result()], &proof).unwrap());
+
+                let end_time = Instant::now();
+                let duration = end_time - start_time;
+                total_duration += duration;
+            }
+            println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Groth16:")), total_duration/10);
         }
-        println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Groth16:")), total_duration/10);
     }
 }
 
@@ -147,18 +200,18 @@ fn main() {
 
     let start_time = Instant::now();
     match (version, circuit){
-        (1, "hadamard") => {bench!(OriginalMarlin, version, HadamardCircuit, constraints);}
-        (2, "hadamard") => {bench!(MarlinV2, version, HadamardCircuit, constraints);}
-        (3, "hadamard") => {bench_t!(MarlinV3, version, HadamardCircuit, constraints);}
-        (4, "hadamard") => {bench_t!(MarlinV4, version, HadamardCircuit, constraints);}
-        (1, "addition") => {bench!(OriginalMarlin, version, AdditionCircuit, constraints);}
-        (2, "addition") => {bench!(MarlinV2, version, AdditionCircuit, constraints);}
-        (3, "addition") => {bench_t!(MarlinV3, version, AdditionCircuit, constraints);}
-        (4, "addition") => {bench_t!(MarlinV4, version, AdditionCircuit, constraints);}
-        (1, "multiple_addition") => {bench!(OriginalMarlin, version, MultipleAdditionCircuit, constraints);}
-        (2, "multiple_addition") => {bench!(MarlinV2, version, MultipleAdditionCircuit, constraints);}
-        (3, "multiple_addition") => {bench_t!(MarlinV3, version, MultipleAdditionCircuit, constraints);}
-        (4, "multiple_addition") => {bench_t!(MarlinV4, version, MultipleAdditionCircuit, constraints);}
+        (1, "hadamard") => {bench_1!(OriginalMarlin, version, HadamardCircuit, constraints);}
+        (2, "hadamard") => {bench_2!(MarlinV2, version, HadamardCircuit, constraints);}
+        (3, "hadamard") => {bench_3_4!(MarlinV3, version, HadamardCircuit, constraints);}
+        (4, "hadamard") => {bench_3_4!(MarlinV4, version, HadamardCircuit, constraints);}
+        (1, "addition") => {bench_1!(OriginalMarlin, version, AdditionCircuit, constraints);}
+        (2, "addition") => {bench_2!(MarlinV2, version, AdditionCircuit, constraints);}
+        (3, "addition") => {bench_3_4!(MarlinV3, version, AdditionCircuit, constraints);}
+        (4, "addition") => {bench_3_4!(MarlinV4, version, AdditionCircuit, constraints);}
+        (1, "multiple_addition") => {bench_1!(OriginalMarlin, version, MultipleAdditionCircuit, constraints);}
+        (2, "multiple_addition") => {bench_2!(MarlinV2, version, MultipleAdditionCircuit, constraints);}
+        (3, "multiple_addition") => {bench_3_4!(MarlinV3, version, MultipleAdditionCircuit, constraints);}
+        (4, "multiple_addition") => {bench_3_4!(MarlinV4, version, MultipleAdditionCircuit, constraints);}
         _ => println!("Invalid version"),
     }
     let end_time = Instant::now();
