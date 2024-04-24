@@ -54,30 +54,26 @@ macro_rules! bench_1 {
 
         let universal_srs = MarlinInst::universal_setup(num_constraints, num_variables, num_variables, rng).unwrap();
 
-        for constraint in [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]{
-            let circuit_r = $circuit::new_random(rng, constraint, true);
-            // let circuit_r = $circuit::new_random(rng, $constraints, true);
+        let circuit_r = $circuit::new_random(rng, $constraints, true);
 
-            let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();      
+        let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();      
 
-            let circuit_instance = $circuit::new_random(rng, constraint, false);
-            // let circuit_instance = $circuit::new_random(rng, $constraints, false);
+        let circuit_instance = $circuit::new_random(rng, $constraints, false);
 
-            let mut total_duration = std::time::Duration::new(0, 0);
+        let mut total_duration = std::time::Duration::new(0, 0);
 
-            for _ in 0..10 {
-                let start_time = Instant::now();
-                
-                let proof = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
+        for _ in 0..10 {
+            let start_time = Instant::now();
+            
+            let proof = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
 
-                assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng).unwrap());
+            assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng).unwrap());
 
-                let end_time = Instant::now();
-                let duration = end_time - start_time;
-                total_duration += duration;
-            }
-            println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
+            let end_time = Instant::now();
+            let duration = end_time - start_time;
+            total_duration += duration;
         }
+        println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
     }
 }
 
@@ -93,30 +89,26 @@ macro_rules! bench_2 {
         let rng = &mut ark_std::test_rng();
         let universal_srs = MarlinInst::universal_setup(num_constraints, num_variables, num_variables, rng).unwrap();
 
-        for constraint in [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]{
-            let circuit_r = $circuit::new_random(rng, constraint, true);
-            // let circuit_r = $circuit::new_random(rng, $constraints, true);
+        let circuit_r = $circuit::new_random(rng, $constraints, true);
 
-            let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();
+        let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();
+        
+        let circuit_instance = $circuit::new_random(rng, $constraints, false);
+
+        let mut total_duration = std::time::Duration::new(0, 0);
+
+        for _ in 0..10 {
+            let start_time = Instant::now();
             
-            let circuit_instance = $circuit::new_random(rng, constraint, false);
-            // let circuit_instance = $circuit::new_random(rng, $constraints, false);
+            let proof = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
 
-            let mut total_duration = std::time::Duration::new(0, 0);
+            assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng).unwrap());
 
-            for _ in 0..10 {
-                let start_time = Instant::now();
-                
-                let proof = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
-
-                assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng).unwrap());
-
-                let end_time = Instant::now();
-                let duration = end_time - start_time;
-                total_duration += duration;
-            }
-            println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
+            let end_time = Instant::now();
+            let duration = end_time - start_time;
+            total_duration += duration;
         }
+        println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
     }
 }
 
@@ -132,30 +124,27 @@ macro_rules! bench_3_4 {
         let rng = &mut ark_std::test_rng();
         let universal_srs = MarlinInst::universal_setup(num_constraints, num_variables, num_variables, rng).unwrap();
 
-        for constraint in [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]{
-            let circuit_r = $circuit::new_random(rng, constraint, true);
-            // let circuit_r = $circuit::new_random(rng, $constraints, true);
+        let circuit_r = $circuit::new_random(rng, $constraints, true);
 
-            let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();
+        let (index_pk, index_vk) = MarlinInst::index(&universal_srs, circuit_r).unwrap();
+        
+        let circuit_instance = $circuit::new_random(rng, $constraints, false);
+
+        let mut total_duration = std::time::Duration::new(0, 0);
+
+        for _ in 0..10 {
+            let start_time = Instant::now();
             
-            let circuit_instance = $circuit::new_random(rng, constraint, false);
-            // let circuit_instance = $circuit::new_random(rng, $constraints, false);
+            let (proof, t_poly) = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
 
-            let mut total_duration = std::time::Duration::new(0, 0);
+            assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng, &t_poly).unwrap());
 
-            for _ in 0..10 {
-                let start_time = Instant::now();
-                
-                let (proof, t_poly) = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
-
-                assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng, &t_poly).unwrap());
-
-                let end_time = Instant::now();
-                let duration = end_time - start_time;
-                total_duration += duration;
-            }
-            println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
+            let end_time = Instant::now();
+            let duration = end_time - start_time;
+            total_duration += duration;
         }
+        println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
+
     }
 }
 
@@ -163,31 +152,27 @@ macro_rules! bench_groth {
     ($circuit:ident, $constraints:expr) => {
         let rng = &mut ark_std::test_rng();
         
-        for constraint in [5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000]{
+        let circuit_r = $circuit::new_random(rng, $constraints, true);
 
-            let circuit_r = $circuit::new_random(rng, constraint, true);
-            // let circuit_r = $circuit::new_random(rng, $constraints, true);
+        let (index_pk, index_vk) = Groth16::<Bls12_381>::circuit_specific_setup(circuit_r, rng).unwrap();      
+        
+        let circuit_instance = $circuit::new_random(rng, $constraints, false);
 
-            let (index_pk, index_vk) = Groth16::<Bls12_381>::circuit_specific_setup(circuit_r, rng).unwrap();      
-            
-            let circuit_instance = $circuit::new_random(rng, constraint, false);
-            // let circuit_instance = $circuit::new_random(rng, $constraints, false);
+        let mut total_duration = std::time::Duration::new(0, 0);
 
-            let mut total_duration = std::time::Duration::new(0, 0);
+        for _ in 0..10 {
+            let start_time = Instant::now();
 
-            for _ in 0..10 {
-                let start_time = Instant::now();
+            let proof = Groth16::<Bls12_381>::prove(&index_pk, circuit_instance, rng).unwrap();
 
-                let proof = Groth16::<Bls12_381>::prove(&index_pk, circuit_instance, rng).unwrap();
+            assert!(Groth16::<Bls12_381>::verify(&index_vk, &[circuit_instance.get_result()], &proof).unwrap());
 
-                assert!(Groth16::<Bls12_381>::verify(&index_vk, &[circuit_instance.get_result()], &proof).unwrap());
-
-                let end_time = Instant::now();
-                let duration = end_time - start_time;
-                total_duration += duration;
-            }
-            println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Groth16:")), total_duration/10);
+            let end_time = Instant::now();
+            let duration = end_time - start_time;
+            total_duration += duration;
         }
+        println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Groth16:")), total_duration/10);
+
     }
 }
 
