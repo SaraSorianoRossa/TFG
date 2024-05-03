@@ -17,7 +17,7 @@ use marlin_v1::Marlin as OriginalMarlin;
 use marlin_v2::Marlin as MarlinV2;
 use marlin_v3::Marlin as MarlinV3;
 use marlin_v4::Marlin as MarlinV4;
-use marlin_v5::Marlin as MarlinV5;
+use new_inner::Marlin as MarlinNewInner;
 
 use circuit_traits::BenchCircuit;
 use addition_circuit::AdditionCircuit;
@@ -166,26 +166,19 @@ macro_rules! bench_5 {
         
         let circuit_instance = $circuit::new_random(rng, $constraints, false);
 
-        let mut total_duration = std::time::Duration::new(0, 0);
         let mut total_duration_acc = std::time::Duration::new(0, 0);
 
-        for _ in 0..5 {
+        for _ in 0..10 {
 
             let mut all_variables = Vec::new();
 
             let mut num_constraints_acc = 0;
             let mut num_input_variables_acc = 0;
             let matrices = vec![matrix_a.clone(), matrix_b.clone(), matrix_c.clone()];
-            for _i in 0..2{
-                let start_time = Instant::now();
-                
+            for _i in 0..2{                
                 let (proof, alpha, eta_a, eta_b, eta_c, beta, y, num_constraints_i, num_input_variables_i) = MarlinInst::prove(&index_pk, circuit_instance, rng).unwrap();
 
                 assert!(MarlinInst::verify(&index_vk, &[circuit_instance.get_result()], &proof, rng, &y).unwrap());
-
-                let end_time = Instant::now();
-                let duration = end_time - start_time;
-                total_duration += duration;
 
                 let variables = vec![alpha, eta_a, eta_b, eta_c, beta, y];
                 all_variables.push(variables);
@@ -200,8 +193,6 @@ macro_rules! bench_5 {
             drop(matrices);
         }
         println!("\n{} {:?}", Colorize::bold(Colorize::cyan("Time spended doing the new inner part:")), total_duration_acc/10);
-        println!("{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin:")), total_duration/10);
-        println!("{} {:?}", Colorize::bold(Colorize::cyan("Time spended proving and verifying in Marlin + new inner part:")), (total_duration + total_duration_acc)/10);
     }
 }
 
@@ -209,7 +200,6 @@ macro_rules! bench_groth {
     ($circuit:ident, $constraints:expr) => {
         let rng = &mut ark_std::test_rng();
         
-
         let circuit_r = $circuit::new_random(rng, $constraints, true);
 
         let (index_pk, index_vk) = Groth16::<Bls12_381>::circuit_specific_setup(circuit_r, rng).unwrap();      
@@ -246,17 +236,17 @@ fn main() {
         (2, "hadamard") => {bench_2!(MarlinV2, version, HadamardCircuit, constraints);}
         (3, "hadamard") => {bench_3_4!(MarlinV3, version, HadamardCircuit, constraints);}
         (4, "hadamard") => {bench_3_4!(MarlinV4, version, HadamardCircuit, constraints);}
-        (5, "hadamard") => {bench_5!(MarlinV5, version, HadamardCircuit, constraints);}
+        (5, "hadamard") => {bench_5!(MarlinNewInner, version, HadamardCircuit, constraints);}
         (1, "addition") => {bench_1!(OriginalMarlin, version, AdditionCircuit, constraints);}
         (2, "addition") => {bench_2!(MarlinV2, version, AdditionCircuit, constraints);}
         (3, "addition") => {bench_3_4!(MarlinV3, version, AdditionCircuit, constraints);}
         (4, "addition") => {bench_3_4!(MarlinV4, version, AdditionCircuit, constraints);}
-        (5, "addition") => {bench_5!(MarlinV5, version, AdditionCircuit, constraints);}
+        (5, "addition") => {bench_5!(MarlinNewInner, version, AdditionCircuit, constraints);}
         (1, "multiple_addition") => {bench_1!(OriginalMarlin, version, MultipleAdditionCircuit, constraints);}
         (2, "multiple_addition") => {bench_2!(MarlinV2, version, MultipleAdditionCircuit, constraints);}
         (3, "multiple_addition") => {bench_3_4!(MarlinV3, version, MultipleAdditionCircuit, constraints);}
         (4, "multiple_addition") => {bench_3_4!(MarlinV4, version, MultipleAdditionCircuit, constraints);}
-        (5, "multiple_addition") => {bench_5!(MarlinV5, version, MultipleAdditionCircuit, constraints);}
+        (5, "multiple_addition") => {bench_5!(MarlinNewInner, version, MultipleAdditionCircuit, constraints);}
         _ => println!("Invalid version"),
     }
     let end_time = Instant::now();
