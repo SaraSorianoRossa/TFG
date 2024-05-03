@@ -449,7 +449,7 @@ dependencies = [
  "marlin-v2",
  "marlin-v3",
  "marlin-v4",
- "marlin-v5",
+ "new-inner",
 ]
 
 [[package]]
@@ -517,23 +517,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "marlin-v5"
-version = "0.3.0"
-source = "git+https://github.com/SaraSorianoRossa/Marlin-v5.git#11653b4cc758e5115e7b3b1f88a0e578c98aaed9"
-dependencies = [
- "ark-ff",
- "ark-poly",
- "ark-poly-commit-new",
- "ark-relations",
- "ark-serialize",
- "ark-std",
- "derivative",
- "digest",
- "nalgebra",
- "rand_chacha",
-]
-
-[[package]]
 name = "matrixmultiply"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -574,6 +557,23 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "new-inner"
+version = "0.3.0"
+source = "git+https://github.com/SaraSorianoRossa/New-inner.git#e115a86318ea6bde7b4e5e019a63a2eda78ccb5e"
+dependencies = [
+ "ark-ff",
+ "ark-poly",
+ "ark-poly-commit-new",
+ "ark-relations",
+ "ark-serialize",
+ "ark-std",
+ "derivative",
+ "digest",
+ "nalgebra",
+ "rand_chacha",
 ]
 
 [[package]]

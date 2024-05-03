@@ -19,7 +19,7 @@ marlin-v1 = { git = "https://github.com/SaraSorianoRossa/Original-Marlin.git", d
 marlin-v2 = { git = "https://github.com/SaraSorianoRossa/Marlin-v2.git", default-features = false }
 marlin-v3 = { git = "https://github.com/SaraSorianoRossa/Marlin-v3.git", default-features = false }
 marlin-v4 = { git = "https://github.com/SaraSorianoRossa/Marlin-v4.git", default-features = false }
-marlin-v5 = { git = "https://github.com/SaraSorianoRossa/Marlin-v5.git", default-features = false }
+new-inner = { git = "https://github.com/SaraSorianoRossa/New-inner.git", default-features = false }
 blake2 = { version = "0.9", default-features = false }
 ark-groth16 = {version = "^0.3.0", default-features = false }
 ark-snark = { version = "^0.3.0", default-features = false }
